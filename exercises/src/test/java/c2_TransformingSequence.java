@@ -121,7 +121,10 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
     @Test
     public void sum_each_successive() {
         //todo: do your changes here
-        Flux<Integer> sumEach = numerical_service();
+        // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#scan-A-java.util.function.BiFunction-
+        // There is an operator for basically everything...
+        Flux<Integer> sumEach = numerical_service()
+                .scan( (accumulator, next) -> accumulator + next);
 
         StepVerifier.create(sumEach)
                     .expectNext(1, 3, 6, 10, 15, 21, 28, 36, 45, 55)
@@ -137,10 +140,10 @@ public class c2_TransformingSequence extends TransformingSequenceBase {
      */
     @Test
     public void sequence_starts_with_zero() {
+        //todo: change this line only
+        // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#startWith-T%2E%2E%2E-
         Flux<Integer> result = numerical_service()
-                .
-                //todo: change this line only
-                ;
+                .startWith(0);
 
         StepVerifier.create(result)
                     .expectNext(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
