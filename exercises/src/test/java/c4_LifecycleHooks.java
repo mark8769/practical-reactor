@@ -36,9 +36,9 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void no_subscription_no_gains() {
         CopyOnWriteArrayList<String> hooksTriggered = new CopyOnWriteArrayList<>();
 
+        //todo: change this line only
         Flux<Integer> temperatureFlux = room_temperature_service()
-                //todo: change this line only
-                ;
+                .doOnSubscribe((a)-> hooksTriggered.add("subscribe"));
 
         StepVerifier.create(temperatureFlux.take(5))
                     .expectNextCount(5)
@@ -55,9 +55,10 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void be_there_early() {
         CopyOnWriteArrayList<String> hooksTriggered = new CopyOnWriteArrayList<>();
 
+        //todo: change this line only
+        // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#doFirst-java.lang.Runnable-
         Flux<Integer> temperatureFlux = room_temperature_service()
-                //todo: change this line only
-                ;
+                .doFirst(() -> hooksTriggered.add("before subscribe"));
 
         StepVerifier.create(temperatureFlux.take(5).doOnSubscribe(s -> hooksTriggered.add("subscribe")))
                     .expectNextCount(5)
@@ -74,9 +75,8 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
     public void atomic_counter() {
         AtomicInteger counter = new AtomicInteger(0);
 
-        Flux<Integer> temperatureFlux = room_temperature_service()
-                //todo: change this line only
-                ;
+        //todo: change this line only
+        Flux<Integer> temperatureFlux = room_temperature_service();
 
         StepVerifier.create(temperatureFlux)
                     .expectNextCount(20)
