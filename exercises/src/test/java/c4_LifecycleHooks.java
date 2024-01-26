@@ -235,13 +235,16 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
      *
      * Bonus: Explore this operator's documentation, as it may be useful in the future.
      */
+    // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#doOnEach-java.util.function.Consumer-
+    // SignalType.name (name method inherited from ENUM type...
+    // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/SignalType.html
     @Test
     public void one_to_rule_them_all() {
         CopyOnWriteArrayList<String> signals = new CopyOnWriteArrayList<>();
 
+        //todo: change this line only
         Flux<Integer> flux = Flux.just(1, 2, 3)
-                //todo: change this line only
-                ;
+                        .doOnEach(integerSignal -> signals.add(integerSignal.getType().name()));
 
         StepVerifier.create(flux)
                     .expectNextCount(3)
