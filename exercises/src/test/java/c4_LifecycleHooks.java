@@ -71,12 +71,17 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
      * Add a hook that will execute for each element emitted by `temperatureFlux`. As a side effect print out the value
      * using `System.out` and increment `counter` value.
      */
+    // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#doOnNext-java.util.function.Consumer-
     @Test
     public void atomic_counter() {
         AtomicInteger counter = new AtomicInteger(0);
 
         //todo: change this line only
-        Flux<Integer> temperatureFlux = room_temperature_service();
+        Flux<Integer> temperatureFlux = room_temperature_service()
+                .doOnNext( (item) -> {
+                    System.out.println(item);
+                    counter.incrementAndGet();
+                });
 
         StepVerifier.create(temperatureFlux)
                     .expectNextCount(20)
@@ -89,13 +94,14 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
      * Add a hook that will execute when `temperatureFlux` has completed without errors. As a side effect set
      * `completed` flag to true.
      */
+    // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#doOnComplete-java.lang.Runnable-
     @Test
     public void successfully_executed() {
         AtomicBoolean completed = new AtomicBoolean(false);
 
+        //todo: change this line only
         Flux<Integer> temperatureFlux = room_temperature_service()
-                //todo: change this line only
-                ;
+                .doOnComplete(() -> completed.set(true));
 
         StepVerifier.create(temperatureFlux.skip(20))
                     .expectNextCount(0)
@@ -108,13 +114,14 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
      * Add a hook that will execute when `temperatureFlux` is canceled by the subscriber. As a side effect set
      * `canceled` flag to true.
      */
+    // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#doOnCancel-java.lang.Runnable-
     @Test
     public void need_to_cancel() {
         AtomicBoolean canceled = new AtomicBoolean(false);
 
+        //todo: change this line only
         Flux<Integer> temperatureFlux = room_temperature_service()
-                //todo: change this line only
-                ;
+                .doOnCancel( () -> canceled.set(true));
 
         StepVerifier.create(temperatureFlux.take(0))
                     .expectNextCount(0)
@@ -128,13 +135,15 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
      * by completing successfully or failing with an error.
      * Use only one operator.
      */
+    // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#doOnTerminate-java.lang.Runnable-
     @Test
     public void terminator() {
         AtomicInteger hooksTriggeredCounter = new AtomicInteger(0);
 
+        //todo: change this line only
         Flux<Integer> temperatureFlux = room_temperature_service()
-                //todo: change this line only
-                ;
+                .doOnTerminate(() -> hooksTriggeredCounter.incrementAndGet());
+
 
         StepVerifier.create(temperatureFlux.take(0))
                     .expectNextCount(0)
@@ -156,13 +165,14 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
      * completing successfully, gets canceled or failing with an error.
      * Use only one operator!
      */
+    // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#doFinally-java.util.function.Consumer-
     @Test
     public void one_to_catch_them_all() {
         AtomicInteger hooksTriggeredCounter = new AtomicInteger(0);
 
+        //todo: change this line only
         Flux<Integer> temperatureFlux = room_temperature_service()
-                //todo: change this line only
-                ;
+                .doFinally(signalType -> hooksTriggeredCounter.incrementAndGet());
 
         StepVerifier.create(temperatureFlux.take(0))
                     .expectNextCount(0)
@@ -192,8 +202,21 @@ public class c4_LifecycleHooks extends LifecycleHooksBase {
                                  .doFirst(() -> sideEffects.add("two"))
                                  .doFirst(() -> sideEffects.add("one"));
 
+        // todo: change this line only
+        /*
+        https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Flux.html#doFirst-java.lang.Runnable-
+        Note that when several doFirst(Runnable) operators are used anywhere in a chain of operators,
+        their order of execution is reversed compared to the declaration order
+        (as subscribe signal flows backward, from the ultimate subscriber to the source publisher):
+
+         Flux.just(1, 2)
+             .doFirst(() -> System.out.println("three"))
+             .doFirst(() -> System.out.println("two"))
+             .doFirst(() -> System.out.println("one"));
+         //would print one two three
+         */
         List<String> orderOfExecution =
-                Arrays.asList("todo", "todo", "todo"); //todo: change this line only
+                Arrays.asList("one", "two", "three");
 
         StepVerifier.create(just)
                     .expectNext(true)
