@@ -269,7 +269,12 @@ public class c5_CreatingSequence {
     @Test
     public void repeat() {
         AtomicInteger counter = new AtomicInteger(0);
-        Flux<Integer> repeated = null; //todo: change this line
+
+        Callable<Integer> callable = () -> {
+            return counter.incrementAndGet();
+        };
+        //todo: change this line
+        Flux<Integer> repeated = Flux.range(0, 11).repeat();
 
         System.out.println("Repeat: ");
         StepVerifier.create(repeated.doOnNext(System.out::println))
