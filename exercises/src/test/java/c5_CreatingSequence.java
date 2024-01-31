@@ -274,7 +274,10 @@ public class c5_CreatingSequence {
             return counter.incrementAndGet();
         };
         //todo: change this line
-        Flux<Integer> repeated = Flux.range(0, 11).repeat();
+        Flux<Integer> repeated = Mono
+                .fromCallable(callable) // Start at 0 -> 1 -> 2
+                .repeat(9); // Put 0 into flux -> Put 1 -> Put 2
+
 
         System.out.println("Repeat: ");
         StepVerifier.create(repeated.doOnNext(System.out::println))
@@ -285,28 +288,48 @@ public class c5_CreatingSequence {
     /**
      * Following example is just a basic usage of `generate,`create`,`push` sinks. We will learn how to use them in a
      * more complex scenarios when we tackle backpressure.
-     *
+     * https://projectreactor.io/docs/core/release/reference/#_simple_ways_to_create_a_flux_or_mono_and_subscribe_to_it
      * Answer:
      * - What is difference between `generate` and `create`?
+     *          GENERATE - Takes a generator function, SYNCHRONOUS and ONE-BY-ONE EMISSIONS (can only process 1 request at a time)
+     *          CREATE - Advanced form of programmatic creation of a Flux, suitatble for multiple EMISSIONS (multiple threads)
+     *
      * - What is difference between `create` and `push`?
+     *          Create -
+     *          Push - Middle ground between generate and create which is suitable for processing events from a single producer.
+     *                  Can also be asynchronous and can manage backpressure. (Only one thread)
+     *
      */
     @Test
+    // https://projectreactor.io/docs/core/release/reference/#howtoReadMarbles
     public void generate_programmatically() {
 
+        //todo: fix following code so it emits values from 0 to 5 and then completes
+        AtomicInteger counter = new AtomicInteger(0);
         Flux<Integer> generateFlux = Flux.generate(sink -> {
-            //todo: fix following code so it emits values from 0 to 5 and then completes
+            if (counter.get() > 5){
+                sink.complete(); // Finish creating
+            }
+            sink.next(counter.getAndIncrement()); // Emit element
         });
 
         //------------------------------------------------------
-
-        Flux<Integer> createFlux = Flux.create(sink -> {
-            //todo: fix following code so it emits values from 0 to 5 and then completes
+        //todo: fix following code so it emits values from 0 to 5 and then completes
+        Flux<Integer> createFlux = Flux.create(sink ->{
+            for (int i=0; i<=5; i++){
+                sink.next(i);
+            }
+            sink.complete();
         });
 
         //------------------------------------------------------
-
+        //todo: fix following code so it emits values from 0 to 5 and then completes
+        counter.set(0);
         Flux<Integer> pushFlux = Flux.push(sink -> {
-            //todo: fix following code so it emits values from 0 to 5 and then completes
+            for (int i = 0; i <= 5; i++) {
+                sink.next(i);
+            }
+            sink.complete();
         });
 
         StepVerifier.create(generateFlux)
@@ -328,10 +351,12 @@ public class c5_CreatingSequence {
     @Test
     public void multi_threaded_producer() {
         //todo: find a bug and fix it!
-        Flux<Integer> producer = Flux.push(sink -> {
+        Flux<Integer> producer = Flux.create(sink -> {
             for (int i = 0; i < 100; i++) {
                 int finalI = i;
-                new Thread(() -> sink.next(finalI)).start(); //don't change this line!
+                // CREATE: Programmatically create a Flux with the capability of emitting multiple elements in a synchronous or asynchronous manner through the FluxSink API.
+                // PUSH: Programmatically create a Flux with the capability of emitting multiple elements from a SINGLE-threaded producer through the FluxSink API.
+                new Thread(() -> sink.next(finalI)).start(); //don't change this line! // THIS IS NOT SINGLE!!!!!!!!!!!!!!!! SADLY I LOOKED AT SOLUTION THEN READ API CLOSER...
             }
         });
 
