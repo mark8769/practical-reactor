@@ -29,11 +29,15 @@ public class CombiningPublishersBase {
     }
 
     public Flux<Mono<Void>> taskExecutor() {
+        // Map each int (1 ... 10) to Mono that is created from a lambda (which prints task + i)
+        // NOt sure what .subscribeOn does
         return Flux.range(1, 10)
                    //.delayElements(Duration.ofMillis(250))
                    .map(i -> Mono.<Void>fromRunnable(() -> {
                        System.out.println("Executing task: #" + i);
                        taskCounter.incrementAndGet();
+                       // https://projectreactor.io/docs/core/release/api/reactor/core/publisher/Mono.html#subscribeOn-reactor.core.scheduler.Scheduler-
+                       // https://projectreactor.io/docs/core/release/api/reactor/core/scheduler/Schedulers.html
                    }).subscribeOn(Schedulers.parallel()));
     }
 

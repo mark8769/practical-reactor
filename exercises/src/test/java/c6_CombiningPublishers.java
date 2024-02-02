@@ -55,13 +55,15 @@ public class c6_CombiningPublishers extends CombiningPublishersBase {
      *
      * Answer:
      * - Is there a difference between Mono.flatMap() and Flux.flatMap()?
+     *
+     *
      */
     @Test
     public void task_executor() {
         //todo: feel free to change code as you need
-        Flux<Void> tasks = null;
-        taskExecutor();
-
+        Flux<Void> tasks = taskExecutor().flatMap(task -> task);
+        // https://stackoverflow.com/questions/28032827/java-8-lambdas-function-identity-or-t-t
+        // Flux<Void> tasks = taskExecutor().flatMap(Function.identity()); Same as my answer, collecting the lambda
         //don't change below this line
         StepVerifier.create(tasks)
                     .verifyComplete();
